@@ -400,30 +400,50 @@ void handleStatus(AsyncWebServerRequest *request) {
 void handleRoot(AsyncWebServerRequest *request) {
     String html = "<!DOCTYPE html><html><head>";
     html += "<title>Machine Status</title>";
-    html += "<style>button { display: block; margin: 5px; padding: 10px; }</style>";
+    html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"; // Add this line for mobile responsiveness
+
+    // CSS styles
+    html += "<style>";
+    html += "body { font-family: Arial, Helvetica, sans-serif; margin: 20px; padding: 20px; font-size: 20px; }"; // Larger font size
+    html += "h1 { color: #4CAF50; font-size: 36px; }";  // Larger header
+    html += "h2 { color: #2196F3; font-size: 28px; }";  // Larger sub-header
+    html += "p { font-size: 12px; }"; 
+    html += "button { padding: 20px 24px; margin: 16px 0; border: 1px; cursor: pointer; width: 100%; font-size: 24px; border-radius: 12px; font-weight: bold; }"; // Larger button and text
+    html += "button.forward { background-color: #4CAF50; color: white; }";
+    html += "button.stop { background-color: #f44336; color: white; }";
+    html += "button.reverse { background-color: #ffeb3b; color: black; }";
+    html += "button:hover { opacity: 0.8; }";
+    html += ".section-box { border: 2px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 10px; }"; // Add this line for the section box
+    html += "</style>";
     html += "</head><body>";
+
+    // Header
     html += "<h1>Peterson 4700</h1>";
     html += "<p>Device IP Address: " + WiFi.localIP().toString() + "</p>";
     
     // Infeed Status and Control Buttons
+    html += "<div class='section-box'>";
     html += "<h2>Infeed Section</h2>";
     html += "<h3 id='infeedStatus'>Infeed Status: " + String(getInfeedConveyorState()) + "</h3>";
     html += "<p> Infeed default forward speed = 4. Max = 25</p>";
     html += "<p> Infeed default reverse speed = 20. Max = 25</p>";
-    html += "<button onclick='sendRequest(\"/infeed_start\")'>Forward</button>";
-    html += "<button onclick='sendRequest(\"/infeed_stop\")'>Stop</button>";
-    html += "<button onclick='sendRequest(\"/infeed_reverse\")'>Reverse</button>";
+    html += "<button class='forward' onclick='sendRequest(\"/infeed_start\")'>Forward</button>";
+    html += "<button class='stop' onclick='sendRequest(\"/infeed_stop\")'>Stop</button>";
+    html += "<button class='reverse' onclick='sendRequest(\"/infeed_reverse\")'>Reverse</button>";
     html += "<p> </p>";
     html += "<button onclick='sendRequest(\"/infeed_increase\")'>Speed +</button>";
     html += "<button onclick='sendRequest(\"/infeed_decrease\")'>Speed -</button>";
+    html += "</div>";
 
     // Fan Status and Control Buttons
+    html += "<div class='section-box'>";
     html += "<h2>Fan Section</h2>";
     html += "<h3 id='fanStatus'>Fan Status: " + String(getEngineFanState()) + "</h3>";
     html += "<p> Fan automatically engages forward after 1 minute.</p>";
-    html += "<button onclick='sendRequest(\"/fan_forward\")'>Fan Forward</button>";
-    html += "<button onclick='sendRequest(\"/fan_stop\")'>Fan Stop</button>";
-    html += "<button onclick='sendRequest(\"/fan_reverse\")'>Fan Reverse</button>";
+    html += "<button class='forward' onclick='sendRequest(\"/fan_forward\")'>Fan Forward</button>";
+    html += "<button class='stop' onclick='sendRequest(\"/fan_stop\")'>Fan Stop</button>";
+    html += "<button class='reverse' onclick='sendRequest(\"/fan_reverse\")'>Fan Reverse</button>";
+    html += "</div>";
 
     // JavaScript to handle AJAX
     html += "<script>";
