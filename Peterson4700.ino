@@ -2,6 +2,8 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
+#include <ArduinoOTA.h>
+
 
 // Define Pins
 #define infeedStartPin 35
@@ -112,6 +114,8 @@ void setup() {
   // Define the routes and start the server
   serverHandlers();
   server.begin();
+  ArduinoOTA.setHostname(hostname);
+  ArduinoOTA.begin();
 
   lastForwardTime = millis();
 }
@@ -121,6 +125,7 @@ void loop() {
   updateInfeedVoltage();
   updateEngineFanVoltage();
   checkFanForwardTimeout();
+  ArduinoOTA.handle();
   // Your other logic here...
 }
 
@@ -499,8 +504,51 @@ void serverHandlers(){
       request->send(200, "text/plain", getEngineFanState());
   });
 
+  server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request) {
+    request->send(200); // placeholder response
+  }, handleOTAUpdate);
+
+  server.on("/admin", HTTP_GET, handleAdmin);
 
 }
+
+void handleOTAUpdate(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+  if (!index) {
+    Serial.printf("OTA Update Start: %s\n", filename.c_str());
+    if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
+      Update.printError(Serial);
+    }
+  }
+  if (Update.write(data, len) != len) {
+    Update.printError(Serial);
+  }
+  if (final) {
+    if (Update.end(true)) {
+      Serial.printf("OTA Update Success: %u bytes\n", index + len);
+      request->send(200, "text/plain", "Update complete! Rebooting...");
+    } else {
+      Update.printError(Serial);
+      request->send(500, "text/plain", "Update failed! Check the logs.");
+    }
+  }
+}
+
+
+void handleAdmin(AsyncWebServerRequest *request) {
+    String html = "<!DOCTYPE html><html><head>";
+    html += "<title>Admin Page</title>";
+    html += "</head><body>";
+    html += "<h1>Admin Page</h1>";
+    html += "<h2>OTA Update</h2>";
+    html += "<form method='POST' action='/update' enctype='multipart/form-data'>";
+    html += "<input type='file' name='update'>";
+    html += "<input type='submit' value='Update'>";
+    html += "</form>";
+    html += "</body></html>";
+    
+    request->send(200, "text/html", html);
+}
+
 
 String getInfeedConveyorState() {
   switch (infeedConveyorState) {
