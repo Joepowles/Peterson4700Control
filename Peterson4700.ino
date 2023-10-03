@@ -84,6 +84,8 @@ void setup() {
   }
 
   Serial.println("Connected to WiFi");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 
   if (!MDNS.begin(hostname)) { // Start the mDNS responder for peterson4700.local
   Serial.println("Error setting up MDNS responder!");
@@ -92,11 +94,11 @@ void setup() {
 }
 
   // Set pin modes
-  pinMode(infeedStartPin, INPUT_PULLDOWN);
-  pinMode(infeedStopPin, INPUT_PULLDOWN);
-  pinMode(infeedReversePin, INPUT_PULLDOWN);
-  pinMode(infeedIncreaseSpeedPin, INPUT_PULLDOWN);
-  pinMode(infeedDecreaseSpeedPin, INPUT_PULLDOWN);
+  pinMode(infeedStartPin, INPUT);
+  pinMode(infeedStopPin, INPUT);
+  pinMode(infeedReversePin, INPUT);
+  pinMode(infeedIncreaseSpeedPin, INPUT);
+  pinMode(infeedDecreaseSpeedPin, INPUT);
 
   // Setup PWM for Engine Fan
   ledcSetup(PWM_CHANNEL_FAN, PWM_FREQUENCY, PWM_RESOLUTION);
@@ -401,6 +403,7 @@ void handleRoot(AsyncWebServerRequest *request) {
     html += "<style>button { display: block; margin: 5px; padding: 10px; }</style>";
     html += "</head><body>";
     html += "<h1>Peterson 4700</h1>";
+    html += "<p>Device IP Address: " + WiFi.localIP().toString() + "</p>";
     
     // Infeed Status and Control Buttons
     html += "<h2>Infeed Section</h2>";
